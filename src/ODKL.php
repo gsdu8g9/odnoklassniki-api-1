@@ -22,6 +22,23 @@ class ODKL{
 	public function calculateAuthKey($viewer_id){
 		return md5($this->app_id.'_'.$viewer_id.'_'.$this->secret);
 	}	 
+	
+	public function get_token($code, $redirect_uri){
+	
+		$curl = curl_init('http://api.odnoklassniki.ru/oauth/token.do');
+		curl_setopt($curl, CURLOPT_POST, 1);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, 'code=' . $code . '&redirect_uri=' . urlencode($redirect_uri) . '&grant_type=authorization_code&client_id=' . $this->app_id . '&client_secret=' . $this->secret);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+		$s = curl_exec($curl);
+		curl_close($curl);
+		$auth = json_decode($s, true);
+		$curl = curl_init('http://api.odnoklassniki.ru/fb.do?access_token=' . $auth['access_token'] . '&application_key=' . $this->public_key . '&method=users.getCurrentUser&sig=' . md5('application_key=' . $this->public_key . 'method=users.getCurrentUser' . md5($auth['access_token'] . $this->secret)));
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+		$s = curl_exec($curl);
+		curl_close($curl);
+		
+		return array('user'=>$s, 'access_token'=>$auth['access_token']);
+	}
 	 
 	public function api($method, $params){
 		$params['application_key'] = $this->public_key;

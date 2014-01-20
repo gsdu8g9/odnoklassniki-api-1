@@ -51,6 +51,18 @@ class ODKL{
 			throw new ODKLException('ODKL API error');
 		}
 		return $response;
+	}	 
+	
+	public function promo_api($method, $params){
+		$params['appId'] = $this->app_id;
+		$params['format'] = 'json';
+		$params['sig']=$this->sign($params);
+		
+		$response=file_get_contents('http://sp.odnoklassniki.ru/projects/common/'.$method.'?'.http_build_query($params));
+		if(!$response=json_decode($response)){
+			throw new ODKLException('ODKL API error');
+		}
+		return $response;
 	}
 	
 	public function sign($params){
